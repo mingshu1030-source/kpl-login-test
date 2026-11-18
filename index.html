@@ -1,2 +1,25 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>議會題庫｜Google 登入測試</title><style>body{font-family:system-ui,'Noto Sans TC',sans-serif;background:#f5f7fb;color:#172b4d;margin:0;padding:32px 16px}.panel{max-width:540px;margin:50px auto;background:white;border:1px solid #dce3ee;border-radius:16px;padding:30px;box-shadow:0 8px 25px #1232 10}h1{font-size:24px}p{line-height:1.7}#result{white-space:pre-wrap;background:#f3f6fa;border-radius:8px;padding:14px;margin-top:18px}small{color:#526277}button{padding:9px 16px;cursor:pointer}</style></head><body><main class="panel"><h1>議會題庫｜Google 登入測試</h1><p>這是獨立測試頁，不連接議會題庫、Google 試算表或 Drive，也不提供任何編輯權限。</p><div id="g_id_onload" data-client_id="914390946666-3i83u0l6rjc5laqtd48qas0v1681sreg.apps.googleusercontent.com" data-callback="onGoogleCredential" data-auto_prompt="false"></div><div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rectangular"></div><div id="result" role="status">等待 Google 登入…</div><p><small>僅顯示登入回傳的基本資訊供測試。這裡的資訊尚未經後端驗證，不能據此授予權限。請勿分享登入憑證或含憑證的截圖。</small></p></main><script>function onGoogleCredential(response){try{const part=response.credential.split('.')[1];const normalized=part.replace(/-/g,'+').replace(/_/g,'/');const json=JSON.parse(decodeURIComponent(Array.from(atob(normalized),c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')));document.getElementById('result').textContent='已收到 Google 登入回應（尚未經伺服器驗證）\n帳號：'+(json.email||'未提供')+'\n姓名：'+(json.name||'未提供')+'\n請不要將此結果視為正式授權。';}catch(e){document.getElementById('result').textContent='收到登入回應，但解析失敗：'+e.message;}}</script><script src="https://accounts.google.com/gsi/client" async defer></script></body></html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>議會題庫｜Google 後端登入測試</title><style>body{font-family:system-ui,'Noto Sans TC',sans-serif;background:#f5f7fb;color:#172b4d;margin:0;padding:32px 16px}.panel{max-width:540px;margin:50px auto;background:white;border:1px solid #dce3ee;border-radius:16px;padding:30px;box-shadow:0 8px 25px #1232 1010}h1{font-size:24px}p{line-height:1.7}#result{white-space:pre-wrap;background:#f3f6fa;border-radius:8px;padding:14px;margin-top:18px}small{color:#526277}</style></head><body><main class="panel"><h1>議會題庫｜Google 後端登入測試</h1><p>獨立測試頁：只驗證 Google 身分，不連接議會題庫或附件，也不授予編輯權限。</p><div id="g_id_onload" data-client_id="914390946666-3i83u0l6rjc5laqtd48qas0v1681sreg.apps.googleusercontent.com" data-callback="onGoogleCredential" data-auto_prompt="false"></div><div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rectangular"></div><div id="result" role="status">等待 Google 登入…</div><p><small>測試結果只供確認登入服務連線；尚未連接 Editors 權限名單。不要分享登入憑證。</small></p></main>
+<form id="verifyForm" method="POST" action="https://script.google.com/macros/s/AKfycbxu36XoEEYiEIwfOKrixZBeulqJYcuESU4r9kQTDJvUP7tYvJIAzH4WMBnbesrfVSMh2A/exec" target="verifyFrame" hidden><input name="id_token" id="id_token" type="hidden"></form><iframe id="verifyFrame" name="verifyFrame" title="Google 登入驗證回傳" hidden></iframe>
+<script>
+let awaiting=false;
+function onGoogleCredential(response){
+  if(!response || typeof response.credential!=='string'){document.getElementById('result').textContent='Google 未提供登入憑證。';return;}
+  awaiting=true;
+  document.getElementById('result').textContent='已取得 Google 登入回應，正在等待後端驗證…';
+  document.getElementById('id_token').value=response.credential;
+  document.getElementById('verifyForm').submit();
+  document.getElementById('id_token').value='';
+}
+window.addEventListener('message',event=>{
+  if(!awaiting || event.source!==document.getElementById('verifyFrame').contentWindow) return;
+  // Google Apps Script HtmlService may use a googleusercontent.com origin.
+  // Accept only the iframe we submitted to; this is a connectivity test, NOT authorization.
+  if(typeof event.data!=='object' || !event.data || typeof event.data.ok!=='boolean') return;
+  awaiting=false;
+  const d=event.data;
+  document.getElementById('result').textContent=d.ok
+    ? '後端回傳驗證成功（連線測試）\n帳號：'+(d.email||'')+'\n角色：'+(d.role||'')+'\n注意：此結果不能作為正式權限依據。'
+    : '後端回傳驗證失敗。';
+});
+</script><script src="https://accounts.google.com/gsi/client" async defer></script></body></html>
