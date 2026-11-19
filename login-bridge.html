@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>議會題庫｜Google 登入</title>
+<style>body{font:16px/1.7 system-ui,'Noto Sans TC',sans-serif;background:#f5f7fb;color:#24334c;margin:0;padding:32px 18px}.panel{max-width:450px;margin:10vh auto;background:white;border:1px solid #dce3ed;border-radius:16px;padding:30px}h1{font-size:22px}#status{font-size:14px;color:#58647a}</style></head>
+<body><main class="panel"><h1>議會題庫｜Google 登入</h1><p>登入後將返回題庫，繼續剛才的 Word 下載操作。</p><div id="g_id_onload" data-client_id="914390946666-3i83u0l6rjc5laqtd48qas0v1681sreg.apps.googleusercontent.com" data-callback="qbGoogleCallback" data-auto_prompt="false"></div><div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"></div><p id="status" role="status">請選擇 Google 帳號登入。</p></main>
+<script>
+(function(){
+  const nonce = new URLSearchParams(location.search).get('nonce');
+  const status = document.getElementById('status');
+  window.qbGoogleCallback = function(response){
+    if(!window.opener || window.opener.closed || !nonce || !response || typeof response.credential !== 'string'){
+      status.textContent='無法連回題庫。請關閉視窗，從題庫重新點選下載。';return;
+    }
+    // 接收端必須核對 event.origin、event.source、nonce，並在後端驗證 ID Token。
+    window.opener.postMessage({type:'KPL_QB_GOOGLE_LOGIN',nonce:nonce,idToken:response.credential},'*');
+    status.textContent='已將登入結果送回題庫，請返回原視窗。';
+    setTimeout(function(){window.close()},700);
+  };
+})();
+</script><script src="https://accounts.google.com/gsi/client" async defer></script></body></html>
